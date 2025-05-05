@@ -2,26 +2,46 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
     <title>Catalogue Croquettes Chat</title>
     <link rel="stylesheet" href="style.css" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      /* Petite correction pour éviter le flash de contenu avant que JS/CSS chargent */
+      body {
+        visibility: hidden;
+      }
+      /* Style pour cacher la vue détail initialement sans attendre le JS */
+      .product-detail-container {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <header>
       <h1>Nos Croquettes pour Chat 🐾</h1>
     </header>
 
+    <div class="filters-container">
+      <button id="category-filter-btn" class="filter-button">
+        Toutes les catégories 🔄
+      </button>
+      <div id="category-list" class="category-dropdown"></div>
+    </div>
+
     <main>
-      <div id="product-grid" class="product-grid-container"></div>
+      <div id="product-grid" class="product-grid-container">
+        <p style="text-align: center; grid-column: 1 / -1">
+          Chargement des produits...
+        </p>
+      </div>
     </main>
 
-    <div
-      id="product-detail-view"
-      class="product-detail-container"
-      style="display: none"
-    >
-      <button id="back-button" class="back-button">&larr; Retour</button>
+    <div id="product-detail-view" class="product-detail-container">
+      <button id="back-button" class="back-button">← Retour</button>
       <h2 id="detail-product-name">Nom du Produit</h2>
       <img id="detail-product-photo" src="" alt="Photo produit" />
 
@@ -36,6 +56,7 @@
         Commander ce produit
       </button>
     </div>
+
     <script src="script.js"></script>
   </body>
 </html>

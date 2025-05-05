@@ -1,322 +1,292 @@
-// script.js - Version Complète et Corrigée
+// script.js - Version Complète avec Filtres et Vue Détail (Fin Corrigée)
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Récupérer les éléments principaux du DOM
+    // Références aux éléments DOM principaux
     const productGrid = document.getElementById('product-grid');
     const productDetailView = document.getElementById('product-detail-view');
     const backButton = document.getElementById('back-button');
+    const categoryFilterButton = document.getElementById('category-filter-btn');
+    const categoryListDropdown = document.getElementById('category-list');
 
-    // Variable globale pour l'objet Telegram WebApp
-    let tg = null;
-    // Variable globale pour stocker le produit sélectionné (utilisé par handleOrderClick via le bouton détail)
-    window.selectedProductForDetail = null;
+    // Variables globales
+    let tg = null; // Objet Telegram WebApp
+    window.selectedProductForDetail = null; // Produit pour la vue détail/commande
+    let allProducts = []; // Pour stocker tous les produits chargés
+    let uniqueCategories = []; // Pour stocker les catégories uniques
+    let currentFilterCategory = 'all'; // Filtre actif ('all' par défaut)
 
     // --- Initialisation de Telegram WebApp ---
-    if (window.Telegram && window.Telegram.WebApp) {
-        tg = window.Telegram.WebApp;
-        tg.ready(); // Indiquer que l'app est prête
-        console.log("Telegram WebApp Initialized.");
-
-        // Optionnel: Adapter les couleurs du body via JS (le CSS le fait déjà avec les variables)
-        // document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
-        // document.body.style.color = tg.themeParams.text_color || '#000000';
-
-        // Cacher le bouton principal par défaut car on utilise un bouton dans la vue détail
-         tg.MainButton.hide();
-
-    } else {
-        console.warn("Telegram WebApp API not found. Running in browser?");
+    try {
+        if (window.Telegram && window.Telegram.WebApp) {
+            tg = window.Telegram.WebApp;
+            tg.ready(); // Indiquer que l'app est prête
+            tg.MainButton.hide(); // On n'utilise pas le bouton principal ici
+            console.log("Telegram WebApp Initialized.");
+            // Rendre le body visible maintenant que JS est prêt (évite flash de contenu)
+            document.body.style.visibility = 'visible';
+        } else {
+            console.warn("Telegram WebApp API not found. Running in browser?");
+            // Rendre visible même hors Telegram pour le test local
+             document.body.style.visibility = 'visible';
+        }
+    } catch (e) {
+        console.error("Error initializing Telegram WebApp:", e);
+         document.body.style.visibility = 'visible'; // Assurer la visibilité en cas d'erreur
     }
+
 
     // --- Chargement des produits depuis JSON ---
     fetch('products.json')
         .then(response => {
-            // Vérifier si la requête a réussi
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return response.json(); // Convertir la réponse en JSON
+            return response.json();
         })
         .then(products => {
-            // Vérifier si la grille existe avant d'ajouter des produits
-            if (productGrid) {
-                displayProducts(products); // Appeler la fonction pour afficher les produits
-            } else {
-                console.error("Element with ID 'product-grid' not found.");
+            if (!Array.isArray(products)) {
+                 throw new Error("Le fichier JSON ne contient pas un tableau valide.");
             }
+            allProducts = products;
+            const categories = new Set(products.map(p => p.category).filter(Boolean));
+            uniqueCategories = ['Toutes les catégories', ...categories].sort((a, b) => {
+                if (a === 'Toutes les catégories') return -1;
+                if (b === 'Toutes les catégories') return 1;
+                return a.localeCompare(b);
+            });
+
+            populateCategoryDropdown();
+            displayProducts(); // Afficher tous les produits par défaut
         })
         .catch(error => {
             console.error('Error fetching or parsing products.json:', error);
             if (productGrid) {
-                // Afficher l'erreur dans la grille si elle existe
-                productGrid.innerHTML = '<p style="color: red; text-align: center;">Erreur lors du chargement des produits.</p>';
+                productGrid.innerHTML = `<p style="color: red; text-align: center; grid-column: 1 / -1;">Erreur lors du chargement des produits (${error.message}). Vérifiez le fichier products.json.</p>`;
             }
         });
 
-    // --- Gestion du bouton Retour ---
+    // --- Gestion du bouton Filtre Catégorie ---
+    if (categoryFilterButton && categoryListDropdown) {
+        categoryFilterButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            const isVisible = categoryListDropdown.style.display === 'block';
+            categoryListDropdown.style.display = isVisible ? 'none' : 'block';
+        });
+    } else {
+         console.error("Filter button or category dropdown not found.");
+    }
+
+    // --- Fermer le dropdown si on clique ailleurs ---
+    document.addEventListener('click', function(event) {
+        if (categoryListDropdown && categoryFilterButton) {
+            if (!categoryFilterButton.contains(event.target) && !categoryListDropdown.contains(event.target)) {
+                categoryListDropdown.style.display = 'none';
+            }
+        }
+    });
+
+    // --- Gestion du bouton Retour de la vue détail ---
     if (backButton) {
         backButton.addEventListener('click', function() {
-            // Cacher la vue détail et afficher la grille
             if (productDetailView) productDetailView.style.display = 'none';
-            if (productGrid) productGrid.style.display = 'grid'; // Remettre l'affichage grille
-
-            // Cacher le bouton principal de Telegram s'il était affiché (normalement non ici)
-             if (tg) {
-                 tg.MainButton.hide();
-             }
-             // Nettoyer le produit sélectionné
-             window.selectedProductForDetail = null;
+            if (productGrid) productGrid.style.display = 'grid';
+            if (tg) tg.MainButton.hide();
+            window.selectedProductForDetail = null;
         });
     } else {
-        console.error("Back button (#back-button) not found in HTML.");
+        console.error("Back button (#back-button) not found.");
     }
 
-}); // --- Fin de l'écouteur DOMContentLoaded ---
+    // --- Fonction pour remplir le dropdown des catégories ---
+    function populateCategoryDropdown() {
+        if (!categoryListDropdown) return;
+        categoryListDropdown.innerHTML = '';
 
+        uniqueCategories.forEach(category => {
+            const item = document.createElement('div');
+            item.className = 'category-item';
+            item.textContent = category; // Le texte sera mis à jour par updateCategoryActiveState
+            item.setAttribute('data-category', category === 'Toutes les catégories' ? 'all' : category);
 
-// --- Fonction pour afficher les produits dans la grille ---
-function displayProducts(products) {
-    const productGrid = document.getElementById('product-grid'); // Assurer d'avoir la référence
-    if (!productGrid) return; // Sortir si la grille n'existe pas
+            item.addEventListener('click', function() {
+                const selectedCategoryValue = this.getAttribute('data-category');
+                currentFilterCategory = selectedCategoryValue;
 
-    productGrid.innerHTML = ''; // Vider la grille
-
-    products.forEach(product => {
-        // Créer la carte produit (div principale)
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.setAttribute('data-product-id', product.id); // Stocker l'ID
-
-        // Créer l'image
-        const img = document.createElement('img');
-        img.src = product.photo;
-        img.alt = product.nom;
-        img.loading = 'lazy'; // Chargement différé des images
-
-        // Créer le conteneur pour le texte
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'product-info';
-
-        // Créer le titre (nom)
-        const name = document.createElement('h4');
-        name.textContent = product.nom;
-
-        // Créer la description
-        const desc = document.createElement('p');
-        desc.textContent = product.desc;
-
-        // Ajouter le nom et la description à la div infoDiv
-        infoDiv.appendChild(name);
-        infoDiv.appendChild(desc);
-
-        // Ajouter l'image et la div d'info à la carte principale
-        card.appendChild(img);
-        card.appendChild(infoDiv);
-
-        // Ajouter un écouteur d'événement pour quand on clique sur une carte
-        card.addEventListener('click', function() {
-            handleProductClick(product); // Passer l'objet produit complet
-        });
-
-        // Ajouter la carte à la grille
-        productGrid.appendChild(card);
-    });
-}
-
-
-// --- Fonction appelée quand on clique sur une carte produit ---
-function handleProductClick(product) {
-    console.log("Clicked product:", product);
-
-    // Récupérer les éléments de la vue principale et détail (on le refait ici au cas où)
-    const productGrid = document.getElementById('product-grid');
-    const productDetailView = document.getElementById('product-detail-view');
-
-    if (!productDetailView || !productGrid) {
-        console.error("Detail view or grid view not found in DOM");
-        return;
-    }
-
-    // Récupérer les éléments *à l'intérieur* de la vue détail
-    const detailName = document.getElementById('detail-product-name');
-    const detailPhoto = document.getElementById('detail-product-photo');
-    const detailVideoContainer = document.getElementById('detail-product-video-container');
-    const detailDesc = document.getElementById('detail-product-desc');
-    const detailSizesList = document.getElementById('detail-product-sizes');
-    const detailOrderButton = document.getElementById('detail-order-button');
-
-    // --- Remplir les éléments avec les données du produit ---
-    if (detailName) detailName.textContent = product.nom;
-    if (detailPhoto) {
-        detailPhoto.src = product.photo;
-        detailPhoto.alt = product.nom;
-    }
-    if (detailDesc) detailDesc.textContent = product.desc;
-
-    // --- Gérer la vidéo (Logique Corrigée) ---
-    if (detailVideoContainer) {
-        detailVideoContainer.innerHTML = ''; // Vider le conteneur avant d'ajouter
-        detailVideoContainer.style.display = 'none'; // Cacher par défaut
-        detailVideoContainer.style.paddingBottom = '56.25%'; // Réinitialiser padding pour ratio
-        detailVideoContainer.style.height = '0'; // Réinitialiser hauteur
-
-        if (product.videoUrl) {
-            let videoId = null;
-            let isYouTube = false;
-
-            try {
-                const url = new URL(product.videoUrl);
-                if (url.hostname.includes('youtube.com') || url.hostname.includes('youtu.be')) {
-                     if (url.pathname === '/watch') {
-                         videoId = url.searchParams.get('v');
-                     } else if (url.pathname.startsWith('/embed/')) {
-                         videoId = url.pathname.substring('/embed/'.length);
-                     } else if (url.hostname === 'youtu.be') {
-                        videoId = url.pathname.substring(1);
-                    }
-                    isYouTube = !!videoId; // Vrai si on a trouvé un ID
+                if (categoryFilterButton) {
+                     // Mettre à jour le texte du bouton filtre principal
+                     categoryFilterButton.textContent = `${category} 🔄`;
                 }
-            } catch (e) {
-                console.warn("URL Vidéo invalide ou non-YouTube:", product.videoUrl, e);
-                isYouTube = false;
-            }
-
-            if (isYouTube && videoId) { // C'est YouTube
-                console.log("Embedding YouTube video ID:", videoId);
-                const iframe = document.createElement('iframe');
-                iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`;
-                iframe.frameborder = "0";
-                iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-                iframe.allowfullscreen = true;
-                detailVideoContainer.appendChild(iframe);
-                detailVideoContainer.style.display = 'block';
-
-            } else { // Essayer comme vidéo directe
-                console.log("Attempting to embed direct video:", product.videoUrl);
-                const video = document.createElement('video');
-                video.src = product.videoUrl;
-                video.controls = true;
-                video.playsinline = true;
-                video.style.maxWidth = '100%';
-                video.onerror = () => {
-                     console.error("Error loading video:", product.videoUrl);
-                     detailVideoContainer.innerHTML = '<p style="color: orange; padding: 10px;">Impossible de charger la vidéo.</p>';
-                     detailVideoContainer.style.display = 'block';
-                     detailVideoContainer.style.paddingBottom = '0';
-                     detailVideoContainer.style.height = 'auto';
-                };
-                 // Si la vidéo se charge, on l'affiche
-                video.onloadeddata = () => {
-                     detailVideoContainer.style.display = 'block';
-                };
-                detailVideoContainer.appendChild(video);
-                // On met display:block ici aussi, si jamais onerror n'est pas immédiat
-                // mais si la vidéo n'est pas valide du tout, onerror devrait le gérer.
-                 detailVideoContainer.style.display = 'block';
-            }
-        }
-         // Si videoUrl était vide ou null dès le départ, le conteneur reste caché (display = 'none')
-    }
-
-    // --- Gérer les tailles ---
-    if (detailSizesList) {
-        detailSizesList.innerHTML = ''; // Vider la liste
-        if (product.tailles && Array.isArray(product.tailles) && product.tailles.length > 0) {
-            product.tailles.forEach(taille => {
-                const li = document.createElement('li');
-                li.textContent = taille;
-                detailSizesList.appendChild(li);
+                categoryListDropdown.style.display = 'none'; // Fermer le dropdown
+                displayProducts(); // Réafficher les produits filtrés
+                updateCategoryActiveState(); // Mettre à jour l'indicateur visuel
             });
+            categoryListDropdown.appendChild(item);
+        });
+         updateCategoryActiveState(); // Appeler une fois pour l'état initial (cocher "Toutes")
+    }
+
+     // --- Fonction pour mettre à jour l'état actif des catégories ---
+     function updateCategoryActiveState() {
+         if (!categoryListDropdown) return;
+         const items = categoryListDropdown.querySelectorAll('.category-item');
+         items.forEach(item => {
+             const categoryValue = item.getAttribute('data-category');
+             if(categoryValue === currentFilterCategory) {
+                 item.classList.add('active');
+                 item.textContent = categoryValue === 'all' ? '✓ Toutes les catégories' : categoryValue; // Utiliser categoryValue car category n'est pas défini ici
+             } else {
+                 item.classList.remove('active');
+                  item.textContent = categoryValue === 'all' ? 'Toutes les catégories' : categoryValue; // Utiliser categoryValue
+             }
+         });
+     }
+
+    // --- Fonction pour afficher les produits dans la grille (avec filtre) ---
+    function displayProducts() {
+        if (!productGrid) {
+            console.error("Product grid container not found for display.");
+            return;
+        }
+        productGrid.innerHTML = ''; // Vider la grille
+
+        const productsToDisplay = currentFilterCategory === 'all'
+            ? allProducts
+            : allProducts.filter(p => p.category === currentFilterCategory);
+
+        if (productsToDisplay.length === 0) {
+            productGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 20px;">Aucun produit trouvé pour cette catégorie.</p>';
+            return;
+        }
+
+        productsToDisplay.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.setAttribute('data-product-id', product.id);
+
+            const img = document.createElement('img');
+            img.src = product.photo;
+            img.alt = product.nom;
+            img.loading = 'lazy';
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'product-info';
+
+            const name = document.createElement('h4');
+            name.textContent = product.nom;
+
+            const desc = document.createElement('p');
+            desc.textContent = product.desc;
+
+            infoDiv.appendChild(name);
+            infoDiv.appendChild(desc);
+            card.appendChild(img);
+            card.appendChild(infoDiv);
+
+            card.addEventListener('click', function() {
+                handleProductClick(product);
+            });
+
+            productGrid.appendChild(card);
+        });
+    }
+
+    // --- Fonction appelée quand on clique sur une carte produit ---
+    function handleProductClick(product) {
+        const productGrid = document.getElementById('product-grid');
+        const productDetailView = document.getElementById('product-detail-view');
+        if (!productDetailView || !productGrid) { console.error("Detail/Grid view not found."); return; }
+
+        const detailName = document.getElementById('detail-product-name');
+        const detailPhoto = document.getElementById('detail-product-photo');
+        const detailVideoContainer = document.getElementById('detail-product-video-container');
+        const detailDesc = document.getElementById('detail-product-desc');
+        const detailSizesList = document.getElementById('detail-product-sizes');
+        const detailOrderButton = document.getElementById('detail-order-button');
+
+        // Remplir
+        if (detailName) detailName.textContent = product.nom;
+        if (detailPhoto) { detailPhoto.src = product.photo; detailPhoto.alt = product.nom; }
+        if (detailDesc) detailDesc.textContent = product.desc;
+
+        // Gérer la vidéo
+        if (detailVideoContainer) {
+            detailVideoContainer.innerHTML = ''; detailVideoContainer.style.display = 'none';
+            detailVideoContainer.style.paddingBottom = '56.25%'; detailVideoContainer.style.height = '0';
+            if (product.videoUrl) {
+                let videoId = null; let isYouTube = false;
+                try {
+                    const url = new URL(product.videoUrl);
+                    if (url.hostname.includes('youtube.com') || url.hostname.includes('youtu.be')) {
+                        if (url.pathname === '/watch') videoId = url.searchParams.get('v');
+                        else if (url.pathname.startsWith('/embed/')) videoId = url.pathname.substring('/embed/'.length);
+                        else if (url.hostname === 'youtu.be') videoId = url.pathname.substring(1);
+                        isYouTube = !!videoId;
+                    }
+                } catch (e) { isYouTube = false; }
+
+                if (isYouTube && videoId) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`;
+                    iframe.frameborder = "0"; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"; iframe.allowfullscreen = true;
+                    detailVideoContainer.appendChild(iframe); detailVideoContainer.style.display = 'block';
+                } else {
+                    const video = document.createElement('video');
+                    video.src = product.videoUrl; video.controls = true; video.playsinline = true; video.style.maxWidth = '100%';
+                    video.onerror = () => { detailVideoContainer.innerHTML = '<p style="color: orange; padding: 10px;">Impossible de charger la vidéo.</p>'; detailVideoContainer.style.paddingBottom = '0'; detailVideoContainer.style.height = 'auto'; };
+                    video.onloadeddata = () => { detailVideoContainer.style.display = 'block'; };
+                    detailVideoContainer.appendChild(video); detailVideoContainer.style.display = 'block';
+                }
+            }
+        }
+
+        // Gérer les tailles
+        if (detailSizesList) {
+            detailSizesList.innerHTML = '';
+            if (product.tailles && Array.isArray(product.tailles) && product.tailles.length > 0) {
+                product.tailles.forEach(taille => { const li = document.createElement('li'); li.textContent = taille; detailSizesList.appendChild(li); });
+            } else { detailSizesList.innerHTML = '<li>Taille non spécifiée</li>'; }
+        }
+
+        // Gérer le bouton Commander
+        if (detailOrderButton) {
+            detailOrderButton.textContent = `Commander ${product.nom}`;
+            window.selectedProductForDetail = product;
+            const newButton = detailOrderButton.cloneNode(true);
+            detailOrderButton.parentNode.replaceChild(newButton, detailOrderButton);
+            newButton.addEventListener('click', () => { if(window.selectedProductForDetail) handleOrderClick(window.selectedProductForDetail); });
+        }
+
+        // Afficher/Cacher vues
+        if (productGrid) productGrid.style.display = 'none';
+        if (productDetailView) productDetailView.style.display = 'block';
+        if (productDetailView) productDetailView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if(tg) tg.MainButton.hide();
+    }
+
+
+    // --- Fonction appelée par le clic sur le bouton "Commander" DANS la vue détail ---
+    function handleOrderClick(product) {
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        console.log("Order button clicked for:", product);
+        if (tg) {
+            tg.sendData(JSON.stringify({ action: 'order_product', product: product }));
+            tg.showAlert(`Votre intérêt pour "${product.nom}" a été signalé !`);
+            // Optionnel: revenir à la grille ? Ou fermer ?
+            // const productGrid = document.getElementById('product-grid');
+            // const productDetailView = document.getElementById('product-detail-view');
+            // if (productDetailView) productDetailView.style.display = 'none';
+            // if (productGrid) productGrid.style.display = 'grid';
+            // tg.close(); // Pour fermer la Mini App
         } else {
-            const li = document.createElement('li');
-            li.textContent = "Taille non spécifiée";
-            detailSizesList.appendChild(li);
+            alert(`Simulation : Commande pour ${product.nom}`);
+            console.log("Data to send:", JSON.stringify({ action: 'order_product', product: product }));
         }
     }
 
-    // --- Gérer le bouton Commander dans la vue détail ---
-    if (detailOrderButton) {
-        detailOrderButton.textContent = `Commander ${product.nom}`; // Mettre à jour le texte du bouton
-        // Stocker le produit courant pour le retrouver dans le handler
-        window.selectedProductForDetail = product;
+    // --- Fonction pour le bouton principal Telegram (non utilisée activement ici) ---
+    function mainButtonClicked() {
+         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+         console.warn("MainButton clicked - no specific context attached in this flow.");
+     }
 
-        // Technique propre pour (re)attacher le listener SANS doublons :
-        // 1. Cloner le bouton (cela enlève les anciens listeners)
-        const newButton = detailOrderButton.cloneNode(true);
-        // 2. Remplacer l'ancien bouton par le nouveau dans le DOM
-        detailOrderButton.parentNode.replaceChild(newButton, detailOrderButton);
-        // 3. Attacher le listener au nouveau bouton
-        newButton.addEventListener('click', () => {
-            // Utilise la variable globale mise à jour
-            if(window.selectedProductForDetail) {
-                 handleOrderClick(window.selectedProductForDetail);
-            } else {
-                 console.error("Aucun produit sélectionné au moment du clic sur Commander");
-            }
-        });
-
-    } else {
-        console.error("Order button (#detail-order-button) not found in HTML.");
-    }
-
-    // --- Afficher la vue détail et cacher la grille ---
-    if (productGrid) productGrid.style.display = 'none';
-    if (productDetailView) productDetailView.style.display = 'block';
-
-    // Faire défiler vers le haut de la vue détail pour une meilleure expérience
-    if (productDetailView) {
-        productDetailView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // Assurer que le MainButton de Telegram est caché
-    if(tg) {
-        tg.MainButton.hide();
-    }
-}
-
-
-// --- Fonction appelée par le clic sur le bouton "Commander" DANS la vue détail ---
-function handleOrderClick(product) {
-    // Vérifier si l'objet tg (Telegram WebApp) est disponible
-    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-
-    console.log("Order button clicked for:", product);
-    if (tg) {
-        // Envoyer les données au bot Python (qui devra les gérer)
-        tg.sendData(JSON.stringify({ action: 'order_product', product: product }));
-
-        // Afficher une confirmation à l'utilisateur
-        tg.showAlert(`Votre intérêt pour "${product.nom}" a été signalé au bot !`);
-
-        // Optionnel : revenir à la grille après avoir commandé ?
-        // const productGrid = document.getElementById('product-grid');
-        // const productDetailView = document.getElementById('product-detail-view');
-        // if (productDetailView) productDetailView.style.display = 'none';
-        // if (productGrid) productGrid.style.display = 'grid';
-        // tg.MainButton.hide();
-
-        // Optionnel : Fermer la Mini App après l'action
-        // tg.close();
-    } else {
-        // Fallback si l'API Telegram n'est pas dispo (ex: test dans navigateur standard)
-        alert(`Simulation : Commande pour ${product.nom}`);
-        console.log("Données qui seraient envoyées au bot :", JSON.stringify({ action: 'order_product', product: product }));
-    }
-}
-
-// --- Fonction pour le bouton principal Telegram (peut être supprimée si non utilisée) ---
-// Gardée ici pour référence si vous réactivez le MainButton ailleurs.
-function mainButtonClicked() {
-    // Important: cette fonction utilise une variable globale 'selectedProduct'
-    // qui n'est plus mise à jour par handleProductClick.
-    // Si vous réutilisez MainButton, il faudra adapter la logique pour savoir quel produit est concerné.
-     const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-     // Hypothetical: Assume product is stored differently if MainButton is used
-     // const product = window.someOtherWayToKnowSelectedProduct;
-     // if (product && tg) {
-     //     console.log("Main button clicked for product:", product);
-     //     tg.sendData(JSON.stringify({ action: 'order_via_main_button', product: product }));
-     // } else {
-          console.warn("MainButton clicked but no selected product context found or Telegram API unavailable.");
-     // }
- }
+}); // --- FIN DE L'ECOUTEUR DOMContentLoaded ---

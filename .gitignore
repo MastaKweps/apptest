@@ -1,0 +1,25 @@
+# --- Secrets ---
+# Ignorer le fichier contenant les clés API, tokens, etc.
+.env
+
+# --- Fichiers Cache et Compilés Python ---
+# (Utile si vous remettez du Python dans ce dossier plus tard)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Fichiers de Log ---
+*.log
+
+# --- Fichiers Système (macOS, Windows) ---
+.DS_Store
+Thumbs.db
+
+# --- Dépendances Node (si vous utilisez npm/node plus tard) ---
+# node_modules/
+
+# --- Environnements virtuels Python ---
+# venv/
+# env/
+# .venv/
