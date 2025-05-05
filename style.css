@@ -1,0 +1,82 @@
+/* Style général */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 15px;
+    /* Variables pour les couleurs Telegram (utilisées par JS) */
+    color: var(--tg-theme-text-color, #000000);
+    background-color: var(--tg-theme-bg-color, #ffffff);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--tg-theme-text-color, #000000); /* Utilise la couleur du texte Telegram */
+}
+
+h1 {
+    font-size: 1.5em; /* Taille de police raisonnable pour mobile */
+}
+
+/* Conteneur de la grille */
+.product-grid-container {
+    display: grid;
+    /* Crée 2 colonnes de taille égale, avec un espace entre elles */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px; /* Espace entre les cartes */
+}
+
+/* Style des cartes produit */
+.product-card {
+    border: 1px solid var(--tg-theme-hint-color, #dddddd); /* Bordure légère avec couleur Telegram */
+    border-radius: 8px;
+    padding: 10px;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f8f8); /* Couleur de fond secondaire Telegram */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Ombre légère */
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* Aligner les éléments en colonne */
+    justify-content: space-between; /* Espacer le contenu */
+    overflow: hidden; /* Empêcher le contenu de déborder */
+}
+
+.product-card img {
+    max-width: 100%; /* L'image prend toute la largeur de la carte */
+    height: 120px; /* Hauteur fixe pour l'image */
+    object-fit: cover; /* Redimensionne l'image pour couvrir la zone sans la déformer */
+    border-radius: 4px; /* Coins arrondis pour l'image */
+    margin-bottom: 10px;
+}
+
+.product-card h4 {
+    font-size: 0.9em;
+    margin: 5px 0;
+    color: var(--tg-theme-text-color, #000000);
+    /* Empêcher le texte de déborder sur plusieurs lignes (optionnel) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-card p {
+    font-size: 0.8em;
+    color: var(--tg-theme-hint-color, #555555); /* Couleur "indice" de Telegram */
+    margin: 5px 0;
+    /* Limiter le nombre de lignes (optionnel) */
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limite à 2 lignes */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.4em; /* Hauteur minimale pour 2 lignes */
+}
+
+/* Media Query pour les écrans plus petits (1 colonne) */
+@media (max-width: 480px) {
+    .product-grid-container {
+        grid-template-columns: 1fr; /* Une seule colonne */
+    }
+    .product-card img {
+       height: 150px; /* Image un peu plus grande sur une colonne */
+    }
+}
