@@ -3,18 +3,24 @@
       "id": "douceur_saumon",
       "nom": "Croquettes Douceur Saumon Chat Sensible",
       "desc": "Au saumon frais, idéal pour les chats à digestion sensible.",
-      "photo": "https://images.pexels.com/photos/45170/cat-kitty-kitten-pet-45170.jpeg?auto=compress&cs=tinysrgb&w=600"
+      "photo": "https://images.pexels.com/photos/45170/cat-kitty-kitten-pet-45170.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "videoUrl": "https://www.youtube.com/watch?v=VZrDxD0Za9I",
+      "tailles": ["500g", "1.5kg", "4kg"]
     },
     {
       "id": "sterilise_poulet",
       "nom": "Croquettes Chat Stérilisé (Poulet)",
       "desc": "Maintien du poids de forme et santé urinaire pour chats stérilisés.",
-      "photo": "https://images.pexels.com/photos/5965930/pexels-photo-5965930.jpeg?auto=compress&cs=tinysrgb&w=600"
+      "photo": "https://images.pexels.com/photos/5965930/pexels-photo-5965930.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "videoUrl": "https://www.youtube.com/watch?v=QHdYTo_q_Jc",
+      "tailles": ["1.5kg", "4kg", "10kg"]
     },
     {
       "id": "chaton_croissance",
       "nom": "Croquettes Chaton Croissance Active",
       "desc": "Riches en nutriments essentiels pour un développement sain du chaton.",
-      "photo": "https://images.pexels.com/photos/1440387/pexels-photo-1440387.jpeg?auto=compress&cs=tinysrgb&w=600"
+      "photo": "https://images.pexels.com/photos/1440387/pexels-photo-1440387.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "videoUrl": "https://www.youtube.com/watch?v=3Xv1_25aKqs",
+      "tailles": ["400g", "1kg"]
     }
   ]
