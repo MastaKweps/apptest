@@ -1,6 +1,6 @@
-// script.js - Version Complète avec Filtres et Vue Détail (Fin Corrigée)
+// script.js - Version Complète avec Filtres, Vue Détail et Redirection Signal (Fin Corrigée)
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() { // <-- Ouverture ici...
     // Références aux éléments DOM principaux
     const productGrid = document.getElementById('product-grid');
     const productDetailView = document.getElementById('product-detail-view');
@@ -22,11 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
             tg.ready(); // Indiquer que l'app est prête
             tg.MainButton.hide(); // On n'utilise pas le bouton principal ici
             console.log("Telegram WebApp Initialized.");
-            // Rendre le body visible maintenant que JS est prêt (évite flash de contenu)
             document.body.style.visibility = 'visible';
         } else {
             console.warn("Telegram WebApp API not found. Running in browser?");
-            // Rendre visible même hors Telegram pour le test local
              document.body.style.visibility = 'visible';
         }
     } catch (e) {
@@ -38,31 +36,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Chargement des produits depuis JSON ---
     fetch('products.json')
         .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
             return response.json();
         })
         .then(products => {
-            if (!Array.isArray(products)) {
-                 throw new Error("Le fichier JSON ne contient pas un tableau valide.");
-            }
+            if (!Array.isArray(products)) { throw new Error("Le fichier JSON ne contient pas un tableau valide."); }
             allProducts = products;
             const categories = new Set(products.map(p => p.category).filter(Boolean));
             uniqueCategories = ['Toutes les catégories', ...categories].sort((a, b) => {
-                if (a === 'Toutes les catégories') return -1;
-                if (b === 'Toutes les catégories') return 1;
-                return a.localeCompare(b);
+                if (a === 'Toutes les catégories') return -1; if (b === 'Toutes les catégories') return 1; return a.localeCompare(b);
             });
-
             populateCategoryDropdown();
             displayProducts(); // Afficher tous les produits par défaut
         })
         .catch(error => {
             console.error('Error fetching or parsing products.json:', error);
-            if (productGrid) {
-                productGrid.innerHTML = `<p style="color: red; text-align: center; grid-column: 1 / -1;">Erreur lors du chargement des produits (${error.message}). Vérifiez le fichier products.json.</p>`;
-            }
+            if (productGrid) { productGrid.innerHTML = `<p style="color: red; text-align: center; grid-column: 1 / -1;">Erreur chargement produits (${error.message}). Vérifiez products.json.</p>`; }
         });
 
     // --- Gestion du bouton Filtre Catégorie ---
@@ -72,9 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isVisible = categoryListDropdown.style.display === 'block';
             categoryListDropdown.style.display = isVisible ? 'none' : 'block';
         });
-    } else {
-         console.error("Filter button or category dropdown not found.");
-    }
+    } else { console.error("Filter button or category dropdown not found."); }
 
     // --- Fermer le dropdown si on clique ailleurs ---
     document.addEventListener('click', function(event) {
@@ -89,33 +76,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (backButton) {
         backButton.addEventListener('click', function() {
             if (productDetailView) productDetailView.style.display = 'none';
-            if (productGrid) productGrid.style.display = 'grid';
-            if (tg) tg.MainButton.hide();
+            if (productGrid) productGrid.style.display = 'grid'; // Assurer le bon display
+             if (tg) tg.MainButton.hide();
             window.selectedProductForDetail = null;
         });
-    } else {
-        console.error("Back button (#back-button) not found.");
-    }
+    } else { console.error("Back button (#back-button) not found."); }
 
     // --- Fonction pour remplir le dropdown des catégories ---
     function populateCategoryDropdown() {
         if (!categoryListDropdown) return;
         categoryListDropdown.innerHTML = '';
-
         uniqueCategories.forEach(category => {
             const item = document.createElement('div');
             item.className = 'category-item';
             item.textContent = category; // Le texte sera mis à jour par updateCategoryActiveState
             item.setAttribute('data-category', category === 'Toutes les catégories' ? 'all' : category);
-
             item.addEventListener('click', function() {
                 const selectedCategoryValue = this.getAttribute('data-category');
                 currentFilterCategory = selectedCategoryValue;
-
-                if (categoryFilterButton) {
-                     // Mettre à jour le texte du bouton filtre principal
-                     categoryFilterButton.textContent = `${category} 🔄`;
-                }
+                if (categoryFilterButton) { categoryFilterButton.textContent = `${category} 🔄`; }
                 categoryListDropdown.style.display = 'none'; // Fermer le dropdown
                 displayProducts(); // Réafficher les produits filtrés
                 updateCategoryActiveState(); // Mettre à jour l'indicateur visuel
@@ -131,61 +110,32 @@ document.addEventListener('DOMContentLoaded', function() {
          const items = categoryListDropdown.querySelectorAll('.category-item');
          items.forEach(item => {
              const categoryValue = item.getAttribute('data-category');
+             const categoryText = categoryValue === 'all' ? 'Toutes les catégories' : categoryValue;
              if(categoryValue === currentFilterCategory) {
                  item.classList.add('active');
-                 item.textContent = categoryValue === 'all' ? '✓ Toutes les catégories' : categoryValue; // Utiliser categoryValue car category n'est pas défini ici
+                 item.textContent = categoryValue === 'all' ? '✓ Toutes les catégories' : categoryText; // Utiliser categoryText car category n'est pas défini ici
              } else {
                  item.classList.remove('active');
-                  item.textContent = categoryValue === 'all' ? 'Toutes les catégories' : categoryValue; // Utiliser categoryValue
+                  item.textContent = categoryText; // Utiliser categoryText
              }
          });
      }
 
+
     // --- Fonction pour afficher les produits dans la grille (avec filtre) ---
     function displayProducts() {
-        if (!productGrid) {
-            console.error("Product grid container not found for display.");
-            return;
-        }
+        if (!productGrid) { console.error("Product grid container not found."); return; }
         productGrid.innerHTML = ''; // Vider la grille
-
-        const productsToDisplay = currentFilterCategory === 'all'
-            ? allProducts
-            : allProducts.filter(p => p.category === currentFilterCategory);
-
-        if (productsToDisplay.length === 0) {
-            productGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 20px;">Aucun produit trouvé pour cette catégorie.</p>';
-            return;
-        }
-
-        productsToDisplay.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.setAttribute('data-product-id', product.id);
-
-            const img = document.createElement('img');
-            img.src = product.photo;
-            img.alt = product.nom;
-            img.loading = 'lazy';
-
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'product-info';
-
-            const name = document.createElement('h4');
-            name.textContent = product.nom;
-
-            const desc = document.createElement('p');
-            desc.textContent = product.desc;
-
-            infoDiv.appendChild(name);
-            infoDiv.appendChild(desc);
-            card.appendChild(img);
-            card.appendChild(infoDiv);
-
-            card.addEventListener('click', function() {
-                handleProductClick(product);
-            });
-
+        const productsToDisplay = currentFilterCategory === 'all' ? allProducts : allProducts.filter(p => p.category === currentFilterCategory);
+        if (productsToDisplay.length === 0) { productGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 20px;">Aucun produit trouvé pour cette catégorie.</p>'; return; }
+        productsToDisplay.forEach(product => { /* ... (code création carte identique à avant) ... */
+            const card = document.createElement('div'); card.className = 'product-card'; card.setAttribute('data-product-id', product.id);
+            const img = document.createElement('img'); img.src = product.photo; img.alt = product.nom; img.loading = 'lazy';
+            const infoDiv = document.createElement('div'); infoDiv.className = 'product-info';
+            const name = document.createElement('h4'); name.textContent = product.nom;
+            const desc = document.createElement('p'); desc.textContent = product.desc;
+            infoDiv.appendChild(name); infoDiv.appendChild(desc); card.appendChild(img); card.appendChild(infoDiv);
+            card.addEventListener('click', function() { handleProductClick(product); });
             productGrid.appendChild(card);
         });
     }
@@ -212,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (detailVideoContainer) {
             detailVideoContainer.innerHTML = ''; detailVideoContainer.style.display = 'none';
             detailVideoContainer.style.paddingBottom = '56.25%'; detailVideoContainer.style.height = '0';
-            if (product.videoUrl) {
+            if (product.videoUrl) { /* ... (code vidéo identique à avant) ... */
                 let videoId = null; let isYouTube = false;
                 try {
                     const url = new URL(product.videoUrl);
@@ -223,15 +173,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         isYouTube = !!videoId;
                     }
                 } catch (e) { isYouTube = false; }
-
                 if (isYouTube && videoId) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`;
-                    iframe.frameborder = "0"; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"; iframe.allowfullscreen = true;
+                    const iframe = document.createElement('iframe'); iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`; iframe.frameborder = "0"; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"; iframe.allowfullscreen = true;
                     detailVideoContainer.appendChild(iframe); detailVideoContainer.style.display = 'block';
                 } else {
-                    const video = document.createElement('video');
-                    video.src = product.videoUrl; video.controls = true; video.playsinline = true; video.style.maxWidth = '100%';
+                    const video = document.createElement('video'); video.src = product.videoUrl; video.controls = true; video.playsinline = true; video.style.maxWidth = '100%';
                     video.onerror = () => { detailVideoContainer.innerHTML = '<p style="color: orange; padding: 10px;">Impossible de charger la vidéo.</p>'; detailVideoContainer.style.paddingBottom = '0'; detailVideoContainer.style.height = 'auto'; };
                     video.onloadeddata = () => { detailVideoContainer.style.display = 'block'; };
                     detailVideoContainer.appendChild(video); detailVideoContainer.style.display = 'block';
@@ -249,8 +195,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Gérer le bouton Commander
         if (detailOrderButton) {
-            detailOrderButton.textContent = `Commander ${product.nom}`;
-            window.selectedProductForDetail = product;
+            detailOrderButton.textContent = `Discuter pour ${product.nom}`; // Texte modifié
+            window.selectedProductForDetail = product; // Stocker produit actuel
             const newButton = detailOrderButton.cloneNode(true);
             detailOrderButton.parentNode.replaceChild(newButton, detailOrderButton);
             newButton.addEventListener('click', () => { if(window.selectedProductForDetail) handleOrderClick(window.selectedProductForDetail); });
@@ -264,22 +210,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // --- Fonction appelée par le clic sur le bouton "Commander" DANS la vue détail ---
+    // --- Fonction appelée par le clic sur le bouton "Commander" DANS la vue détail (MODIFIÉE POUR SIGNAL) ---
     function handleOrderClick(product) {
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        console.log("Order button clicked for:", product);
+        console.log("Order button (Signal redirect) clicked for:", product);
+
+        // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+        // --- IMPORTANT : REMPLACEZ CECI PAR VOTRE VRAI LIEN SIGNAL ---
+        const votreLienSignal = "https://signal.me/#p/+XXXXXXXXXXX";
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+        // Vérifier si le lien a bien été remplacé
+        if (!votreLienSignal || votreLienSignal === "https://signal.me/#p/+XXXXXXXXXXX") {
+             const errorMessage = "Le lien pour contacter le vendeur n'est pas encore configuré.";
+             console.error(errorMessage);
+             if(tg) { tg.showAlert(errorMessage); } else { alert(errorMessage); }
+             return; // Ne pas continuer si le lien manque
+        }
+
+        // Texte de confirmation avant redirection
+        const confirmationMessage = `Vous allez être redirigé(e) vers Signal pour discuter de "${product.nom}". Continuer ?`;
+
         if (tg) {
-            tg.sendData(JSON.stringify({ action: 'order_product', product: product }));
-            tg.showAlert(`Votre intérêt pour "${product.nom}" a été signalé !`);
-            // Optionnel: revenir à la grille ? Ou fermer ?
-            // const productGrid = document.getElementById('product-grid');
-            // const productDetailView = document.getElementById('product-detail-view');
-            // if (productDetailView) productDetailView.style.display = 'none';
-            // if (productGrid) productGrid.style.display = 'grid';
-            // tg.close(); // Pour fermer la Mini App
+            tg.showConfirm(confirmationMessage, function(ok) {
+                 if (ok) { tg.openLink(votreLienSignal); }
+            });
         } else {
-            alert(`Simulation : Commande pour ${product.nom}`);
-            console.log("Data to send:", JSON.stringify({ action: 'order_product', product: product }));
+            if (confirm(confirmationMessage)) { window.open(votreLienSignal, '_blank'); }
         }
     }
 
@@ -289,4 +246,4 @@ document.addEventListener('DOMContentLoaded', function() {
          console.warn("MainButton clicked - no specific context attached in this flow.");
      }
 
-}); // --- FIN DE L'ECOUTEUR DOMContentLoaded ---
+}); // --- FIN DE L'ECOUTEUR DOMContentLoaded ---  <-- Assurez-vous que ceci est bien la toute dernière ligne !

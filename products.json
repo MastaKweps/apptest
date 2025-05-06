@@ -25,5 +25,50 @@
     "videoUrl": "https://www.youtube.com/watch?v=3Xv1_25aKqs",
     "tailles": ["400g", "1kg"],
     "category": "Chaton"
+  },
+  {
+    "id": "adulte_actif_boeuf",
+    "nom": "Croquettes Adulte Actif (Boeuf)",
+    "desc": "Énergie longue durée pour les chats explorateurs et joueurs.",
+    "photo": "https://images.pexels.com/photos/416160/pexels-photo-416160.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "videoUrl": "https://www.youtube.com/watch?v=IwIT8vcU8e8",
+    "tailles": ["2kg", "5kg", "12kg"],
+    "category": "Adulte Actif"
+  },
+  {
+    "id": "senior_poisson",
+    "nom": "Croquettes Senior 7+ (Poisson)",
+    "desc": "Soutien articulaire et nutriments adaptés aux chats plus âgés.",
+    "photo": "https://images.pexels.com/photos/982300/pexels-photo-982300.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "videoUrl": "https://www.youtube.com/watch?v=EId9MrEVzW8",
+    "tailles": ["1kg", "3kg"],
+    "category": "Senior"
+  },
+  {
+    "id": "interieur_saumon",
+    "nom": "Croquettes Chat d'Intérieur (Saumon)",
+    "desc": "Contrôle des odeurs de litière et maintien du poids idéal.",
+    "photo": "https://images.pexels.com/photos/37337/cat-silhouette-cats-silhouette-cat-s-silhouette.jpg?auto=compress&cs=tinysrgb&w=600",
+    "videoUrl": "https://www.youtube.com/watch?v=HRp-WMz7mek",
+    "tailles": ["1.5kg", "4kg"],
+    "category": "Intérieur"
+  },
+  {
+    "id": "urinary_poulet",
+    "nom": "Croquettes Urinary Care (Poulet)",
+    "desc": "Formule spécifique pour la santé du système urinaire félin.",
+    "photo": "https://images.pexels.com/photos/2071882/pexels-photo-2071882.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "videoUrl": "https://www.youtube.com/watch?v=lmxZ51k7jt8",
+    "tailles": ["1.5kg", "3kg"],
+    "category": "Soin Spécifique"
+  },
+  {
+    "id": "pelage_peau_mix",
+    "nom": "Croquettes Pelage & Peau (Mix)",
+    "desc": "Aux oméga 3 & 6 pour un poil soyeux et une peau saine.",
+    "photo": "https://images.pexels.com/photos/2558605/pexels-photo-2558605.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "videoUrl": "https://www.youtube.com/watch?v=G4la97hHcLs",
+    "tailles": ["500g", "2kg"],
+    "category": "Soin Spécifique"
   }
 ]

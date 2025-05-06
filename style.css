@@ -1,122 +1,137 @@
-/* style.css - Version Complète avec Filtres */
+/* style.css - Version avec Design Amélioré Thème Chat */
+
+/* Importation d'une police plus douce depuis Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+/* Définition de variables de couleur personnalisées */
+:root {
+    --main-bg-color: var(--tg-theme-bg-color, #fdfbf7); /* Fond crème très clair par défaut */
+    --card-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); /* Fond des cartes (blanc par défaut) */
+    --text-color: var(--tg-theme-text-color, #333333); /* Couleur texte principale */
+    --hint-color: var(--tg-theme-hint-color, #777777); /* Couleur texte secondaire/indice */
+    --link-color: var(--tg-theme-link-color, #007aff); /* Couleur des liens/bouton retour */
+    --accent-color: #E67E22; /* Couleur d'accentuation orange chaleureux */
+    --button-text-color: var(--tg-theme-button-text-color, #ffffff); /* Couleur texte sur boutons */
+}
 
 /* Style général */
 body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Nunito', sans-serif; /* Application de la nouvelle police */
     margin: 0;
     padding: 15px;
-    color: var(--tg-theme-text-color, #000000);
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    /* Rendre visible une fois chargé */
-    visibility: visible;
+    color: var(--text-color);
+    background-color: var(--main-bg-color);
+    visibility: visible; /* Assurer la visibilité (précédemment caché pour éviter flash) */
+    line-height: 1.5; /* Améliorer lisibilité */
 }
 
 header {
     text-align: center;
-    margin-bottom: 25px;
-    color: var(--tg-theme-text-color, #000000);
+    margin-bottom: 30px; /* Plus d'espace */
 }
 
 h1 {
-    font-size: 1.6em;
-    font-weight: 600;
+    font-size: 1.8em; /* Titre plus grand */
+    font-weight: 700; /* Plus gras */
+    color: var(--accent-color); /* Utilisation de la couleur accent */
 }
+h1 .paw-emoji { /* Classe ajoutée pour l'emoji (voir HTML si besoin) */
+     font-size: 0.8em; /* Emoji légèrement plus petit que le texte */
+     vertical-align: middle;
+}
+
 
 /* Styles pour les Filtres */
 .filters-container {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     position: relative;
     display: flex;
     gap: 10px;
+    justify-content: center; /* Centrer les boutons filtres */
 }
 
 .filter-button {
-    padding: 8px 15px;
-    border: 1px solid var(--tg-theme-hint-color, #cccccc);
-    background-color: var(--tg-theme-secondary-bg-color, #f8f8f8);
-    color: var(--tg-theme-text-color, #000000);
+    padding: 8px 18px; /* Un peu plus de padding */
+    border: 1px solid #e0e0e0; /* Bordure légère */
+    background-color: #ffffff; /* Fond blanc */
+    color: var(--text-color);
     border-radius: 20px;
     cursor: pointer;
     font-size: 0.9em;
-    transition: background-color 0.2s;
-    white-space: nowrap; /* Empêcher le retour à la ligne du texte du bouton */
+    font-weight: 600; /* Texte un peu plus gras */
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .filter-button:hover {
-    background-color: var(--tg-theme-hint-color, #eeeeee);
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .category-dropdown {
-    display: none; /* Caché par défaut */
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    border: 1px solid var(--tg-theme-hint-color, #dddddd);
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    padding: 5px 0;
-    margin-top: 5px;
-    min-width: 200px;
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 10;
+    /* ... (styles précédents pour position, etc. restent valides) ... */
+    display: none; position: absolute; top: 100%; left: 50%; /* Centrer le dropdown */
+    transform: translateX(-50%); /* Ajustement fin du centrage */
+    background-color: #ffffff; /* Fond blanc pour le dropdown */
+    border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    padding: 5px 0; margin-top: 8px; min-width: 220px; max-height: 250px;
+    overflow-y: auto; z-index: 10;
 }
 
 .category-item {
-    padding: 10px 15px;
+    padding: 10px 20px; /* Plus de padding */
     cursor: pointer;
     font-size: 0.95em;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--text-color);
     white-space: nowrap;
+    transition: background-color 0.15s;
 }
 
 .category-item:hover {
-    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    background-color: #f5f5f5;
 }
 
 .category-item.active {
-    font-weight: bold;
-    color: var(--tg-theme-button-color, #007aff);
+    font-weight: 700; /* Gras pour l'actif */
+    color: var(--accent-color); /* Couleur accent pour l'actif */
 }
 
 /* Conteneur de la grille */
-main { /* Ajouté pour s'assurer que c'est bien un conteneur de flux normal */
-    display: block;
-}
-
+main { display: block; }
 .product-grid-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 18px; /* Un peu plus d'espace */
 }
 
 /* Style Amélioré des Cartes Produit */
 .product-card {
     border: none;
-    border-radius: 12px;
-    background-color: var(--tg-theme-secondary-bg-color, #efeff3);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre un peu plus subtile */
+    border-radius: 15px; /* Plus arrondi */
+    background-color: var(--card-bg-color);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08); /* Ombre plus douce */
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s ease-in-out;
-    cursor: pointer; /* Indiquer qu'on peut cliquer */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer;
 }
 
 .product-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px); /* Élévation un peu plus marquée */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .product-card img {
     width: 100%;
-    height: 130px;
+    height: 140px; /* Images un peu plus hautes */
     object-fit: cover;
     display: block;
+    border-bottom: 1px solid #eee; /* Séparation légère */
 }
 
 .product-info {
-    padding: 12px;
+    padding: 15px; /* Plus de padding */
     text-align: left;
     flex-grow: 1;
     display: flex;
@@ -125,132 +140,104 @@ main { /* Ajouté pour s'assurer que c'est bien un conteneur de flux normal */
 }
 
 .product-info h4 {
-    font-size: 1em;
-    font-weight: 600;
-    margin: 0 0 5px 0;
-    color: var(--tg-theme-text-color, #000000);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 1.05em; /* Nom produit plus visible */
+    font-weight: 700;
+    margin: 0 0 8px 0; /* Plus d'espace en bas */
+    color: var(--text-color);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 .product-info p {
-    font-size: 0.85em;
-    color: var(--tg-theme-hint-color, #666666);
+    font-size: 0.88em;
+    color: var(--hint-color);
     margin: 0;
-    line-height: 1.3;
+    line-height: 1.4; /* Hauteur de ligne */
 }
 
 /* Styles pour la Vue Détail Produit */
 .product-detail-container {
-    padding: 15px;
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    /* display: none; est géré par JS et le style inline dans HTML maintenant */
+    padding: 20px; /* Plus de padding */
+    background-color: var(--main-bg-color); /* Fond cohérent */
+    /* display: none; géré par JS */
 }
 
 .back-button {
-    background: none;
-    border: none;
-    color: var(--tg-theme-link-color, #007aff);
-    font-size: 1em;
-    padding: 5px 0;
-    margin-bottom: 15px;
-    cursor: pointer;
+    background: none; border: none;
+    color: var(--link-color);
+    font-size: 1.1em; /* Plus visible */
+    font-weight: 600;
+    padding: 5px 0; margin-bottom: 20px; cursor: pointer;
 }
 
 #detail-product-photo {
-    max-width: 100%;
-    height: auto;
-    max-height: 35vh; /* Un peu plus de hauteur */
-    object-fit: contain;
-    display: block;
-    margin: 10px auto 15px auto; /* Plus d'espace en bas */
-    border-radius: 8px;
+    max-width: 100%; height: auto; max-height: 40vh; /* Permettre plus de hauteur */
+    object-fit: contain; display: block; margin: 10px auto 20px auto;
+    border-radius: 10px; /* Coins arrondis */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Ombre sur la photo */
 }
 
 #detail-product-video-container {
-    margin: 20px 0; /* Plus d'espace vertical */
-    position: relative;
-    padding-bottom: 56.25%; /* 16:9 */
-    height: 0;
-    overflow: hidden;
-    background-color: #1c1c1d; /* Fond sombre (adapte si besoin) */
-    border-radius: 8px;
+    margin: 25px 0; /* Plus d'espace */
+    position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+    background-color: #1c1c1d; border-radius: 10px; /* Coins arrondis */
 }
 
 #detail-product-video-container iframe,
 #detail-product-video-container video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;
 }
 
 #detail-product-name {
-    font-size: 1.5em; /* Plus grand */
-    font-weight: 600;
-    margin-bottom: 15px;
-    text-align: center;
-    color: var(--tg-theme-text-color, #000000);
+    font-size: 1.7em; /* Plus grand */
+    font-weight: 700; /* Gras */
+    margin-bottom: 15px; text-align: center;
+    color: var(--text-color);
 }
 
 #detail-product-desc {
-    font-size: 1em; /* Plus lisible */
-    line-height: 1.5;
-    color: var(--tg-theme-text-color, #333);
-    margin-bottom: 20px; /* Plus d'espace */
+    font-size: 1em; line-height: 1.6; /* Plus espacé */
+    color: var(--text-color);
+    margin-bottom: 25px;
+    text-align: center; /* Centrer la description */
 }
 
 #detail-product-sizes {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 25px; /* Plus d'espace */
-    text-align: center; /* Centrer les pastilles */
+    list-style: none; padding: 0; margin-bottom: 30px; text-align: center;
 }
 
 #detail-product-sizes li {
     display: inline-block;
-    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    color: var(--tg-theme-text-color, #000000); /* Assurer contraste */
-    padding: 6px 12px; /* Un peu plus large */
-    margin: 5px; /* Espace autour */
-    border-radius: 15px; /* Plus arrondi */
-    font-size: 0.9em;
-    border: 1px solid var(--tg-theme-hint-color, #e0e0e0); /* Légère bordure */
+    background-color: #ffffff; /* Pastilles blanches */
+    color: var(--text-color);
+    padding: 8px 15px; /* Plus grandes */
+    margin: 6px;
+    border-radius: 20px; /* Très arrondies */
+    font-size: 0.9em; font-weight: 600; /* Plus lisible */
+    border: 1px solid #ddd; /* Bordure distincte */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .order-button {
-    display: block;
-    width: 100%;
-    padding: 14px; /* Plus haut */
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
-    border: none;
-    border-radius: 10px; /* Coins arrondis */
-    font-size: 1.1em; /* Plus visible */
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    margin-top: 20px; /* Espace au-dessus */
+    display: block; width: 100%; padding: 15px; /* Plus haut */
+    background-color: var(--accent-color); /* Couleur accent */
+    color: var(--button-text-color);
+    border: none; border-radius: 10px; font-size: 1.1em; font-weight: 700; /* Plus gras */
+    cursor: pointer; text-align: center; margin-top: 25px;
+    transition: background-color 0.2s;
+}
+.order-button:hover {
+     /* Assombrir légèrement la couleur accent au survol (nécessite JS ou préprocesseur pour faire ça proprement, ou une couleur fixe) */
+     /* background-color: #d35400; /* Exemple couleur orange assombrie */
+     opacity: 0.9; /* Alternative simple */
 }
 
-/* Media Query pour les petits écrans */
+/* Media Query pour petits écrans */
 @media (max-width: 480px) {
-    body {
-        padding: 10px;
-    }
-    .product-grid-container {
-        grid-template-columns: 1fr; /* 1 colonne */
-        gap: 12px;
-    }
-    .product-card img {
-       height: 160px;
-    }
-     #detail-product-photo {
-        max-height: 30vh; /* Ajuster si besoin */
-    }
-    h1 { font-size: 1.4em; }
-    #detail-product-name { font-size: 1.3em; }
+    body { padding: 12px; }
+    .product-grid-container { grid-template-columns: 1fr; gap: 15px; }
+    .product-card img { height: 170px; }
+    h1 { font-size: 1.5em; }
+    #detail-product-name { font-size: 1.4em; }
+    .filter-button { padding: 8px 15px; font-size: 0.85em;}
+    #detail-product-photo { max-height: 35vh; }
 }
