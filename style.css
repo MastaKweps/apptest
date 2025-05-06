@@ -228,11 +228,11 @@ main { display: block; }
 .order-button:hover {
      /* Assombrir légèrement la couleur accent au survol (nécessite JS ou préprocesseur pour faire ça proprement, ou une couleur fixe) */
      /* background-color: #d35400; /* Exemple couleur orange assombrie */
-     opacity: 0.9; /* Alternative simple */
+     opacity: 0.9;
 }
 
 /* Media Query pour petits écrans */
-@media (max-width: 480px) {
+@media (max-width: 100px) {
     body { padding: 12px; }
     .product-grid-container { grid-template-columns: 1fr; gap: 15px; }
     .product-card img { height: 170px; }
